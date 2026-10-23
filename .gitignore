@@ -1,0 +1,18 @@
+# Ambientes e caches Python
+.venv*/
+venv/
+__pycache__/
+*.py[cod]
+
+# Credenciais locais
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# Avaliações produzidas em testes locais
+data/feedbacks.json
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
