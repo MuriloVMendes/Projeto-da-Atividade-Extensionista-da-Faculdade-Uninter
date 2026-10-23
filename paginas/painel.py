@@ -1,3 +1,6 @@
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
+
 import streamlit as st
 
 from operations import (
@@ -11,6 +14,19 @@ from operations import (
     formatar_tempo,
     gerar_sugestao,
 )
+
+
+def formatar_data_registro(valor):
+    """Exibe datas do banco no horário de Brasília."""
+    try:
+        data = datetime.fromisoformat(str(valor).replace("Z", "+00:00"))
+        if data.tzinfo is None:
+            data = data.replace(tzinfo=timezone.utc)
+        return data.astimezone(ZoneInfo("America/Sao_Paulo")).strftime(
+            "%d/%m/%Y às %H:%M"
+        )
+    except (TypeError, ValueError):
+        return "Data não informada"
 
 
 def concluir(mensagem):
@@ -184,6 +200,7 @@ for item in disciplinas:
 
 
 st.subheader("Histórico")
+st.caption("Datas e horários de Brasília.")
 
 if not sessoes:
     st.info("Você ainda não registrou sessões.")
@@ -193,7 +210,7 @@ else:
             {
                 "Disciplina": item["disciplina"],
                 "Minutos": item["duracao_minutos"],
-                "Registrado em (UTC)": item["criado_em"],
+                "Data e hora": formatar_data_registro(item["criado_em"]),
             }
             for item in sessoes
         ],
@@ -213,7 +230,7 @@ else:
             format_func=lambda item: (
                 f"{registros[item]['disciplina']} · "
                 f"{registros[item]['duracao_minutos']} minutos · "
-                f"{registros[item]['criado_em']}"
+                f"{formatar_data_registro(registros[item]['criado_em'])}"
             ),
         )
 
