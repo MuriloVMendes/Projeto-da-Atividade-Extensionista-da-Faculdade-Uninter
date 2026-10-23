@@ -17,6 +17,33 @@ def usuario_atual():
     return sessao.user.id
 
 
+def mensagem_erro_cadastro(erro):
+    """Traduz códigos conhecidos sem expor credenciais ou a resposta bruta."""
+    codigo = getattr(erro, "code", None)
+    mensagens = {
+        "email_address_not_authorized": "O serviço de confirmação de e-mail ainda não está configurado para cadastrar participantes. Avise o responsável pelo StudyTrack.",
+        "over_email_send_rate_limit": "O limite de envio de e-mails de confirmação foi atingido. Aguarde antes de tentar novamente.",
+        "over_request_rate_limit": "Muitas tentativas de cadastro. Aguarde alguns minutos antes de tentar novamente.",
+        "signup_disabled": "O cadastro de novas contas está desativado. Avise o responsável pelo StudyTrack.",
+        "email_provider_disabled": "O cadastro por e-mail está desativado. Avise o responsável pelo StudyTrack.",
+        "email_address_invalid": "Confira o formato do endereço de e-mail informado.",
+        "weak_password": "A senha não atende aos requisitos de segurança. Escolha uma senha mais forte.",
+        "user_already_exists": "Não foi possível criar a conta. Se você já se cadastrou, use a aba Entrar.",
+        "email_exists": "Não foi possível criar a conta. Se você já se cadastrou, use a aba Entrar.",
+        "validation_failed": "Confira o e-mail e os requisitos da senha e tente novamente.",
+        "unexpected_failure": "O serviço de cadastro encontrou um erro interno. Avise o responsável pelo StudyTrack.",
+        "request_timeout": "O serviço de cadastro demorou para responder. Tente novamente mais tarde.",
+    }
+    mensagem = mensagens.get(
+        codigo,
+        "Não foi possível concluir o cadastro. Confira sua conexão ou avise o responsável pelo StudyTrack.",
+    )
+    # Exibe apenas códigos reconhecidos, nunca o texto bruto da exceção.
+    if codigo in mensagens:
+        mensagem += f" Código: {codigo}."
+    return mensagem
+
+
 def exigir_login():
     try:
         sb = cliente()
@@ -68,8 +95,8 @@ def exigir_login():
             else:
                 try:
                     resposta = sb.auth.sign_up({'email': email.strip(), 'password': senha})
-                except Exception:
-                    st.error('Não foi possível concluir o cadastro. Confira os dados e tente novamente mais tarde.')
+                except Exception as erro:
+                    st.error(mensagem_erro_cadastro(erro))
                 else:
                     if resposta.session:
                         st.rerun()
