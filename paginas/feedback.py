@@ -36,6 +36,7 @@ except RuntimeError as erro:
     st.error(str(erro))
     feedbacks = []
 
+feedbacks = [item for item in feedbacks if 1 <= int(item.get("avaliacao", 0)) <= 5]
 resumo = calcular_resumo_feedback(feedbacks)
 
 st.write("")
@@ -61,11 +62,11 @@ with coluna_formulario:
                 help="Não precisa preencher se escolher a avaliação anônima.",
             )
             avaliacao = st.radio(
-                "Nota de 0 a 5 estrelas *",
-                options=[ 1, 2, 3, 4, 5],
+                "Nota de 1 a 5 estrelas *",
+                options=[1, 2, 3, 4, 5],
                 index=None,
                 horizontal=True,
-                format_func=lambda nota: "0" if nota == 0 else "⭐" * nota,
+                format_func=lambda nota: "⭐" * nota,
             )
             comentario = st.text_area(
                 "Comentário *",
@@ -114,16 +115,28 @@ with coluna_avaliacoes:
         st.info("Ainda não há feedbacks publicados.")
     else:
         with st.expander("Ver distribuição das notas"):
-            for nota in range(5, -1, -1):
+            for nota in range(5, 0, -1):
                 quantidade = resumo["distribuicao"].get(nota, 0)
                 percentual = quantidade / resumo["total"]
-                rotulo = "0 estrelas" if nota == 0 else "⭐" * nota
+                rotulo = "⭐" * nota
                 st.write(f"{rotulo} — {quantidade} avaliação(ões)")
-                st.progress(percentual)
+                st.markdown(
+                    (
+                        '<div role="progressbar" aria-label="Distribuição das avaliações" '
+                        'aria-valuemin="0" aria-valuemax="100" '
+                        f'aria-valuenow="{percentual * 100:.2f}" '
+                        'style="width:100%; height:8px; background:#E5E7EB; '
+                        'border-radius:999px; overflow:hidden; margin:0 0 16px;">'
+                        f'<div style="width:{percentual * 100:.4f}%; height:100%; '
+                        'background:linear-gradient(90deg,#4F46E5,#06B6D4); '
+                        'border-radius:999px;"></div></div>'
+                    ),
+                    unsafe_allow_html=True,
+                )
 
         for item in feedbacks:
-            nota = max(0, min(5, int(item.get("avaliacao", 0))))
-            estrelas = "Sem estrelas" if nota == 0 else "⭐" * nota
+            nota = int(item["avaliacao"])
+            estrelas = "⭐" * nota
             nome = html.escape(str(item.get("nome", "Participante anônimo")))
             comentario = html.escape(str(item.get("comentario", "")))
             data = formatar_data_feedback(item.get("criado_em"))
