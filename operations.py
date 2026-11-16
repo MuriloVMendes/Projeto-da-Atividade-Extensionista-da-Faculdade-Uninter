@@ -304,15 +304,15 @@ def carregar_feedbacks():
 
 
 def registrar_feedback(nome, anonimo, avaliacao, comentario, autorizou_publicacao):
-    """Valida e salva uma avaliação de zero a cinco estrelas."""
+    """Valida e salva uma avaliação de uma a cinco estrelas."""
     nome = nome.strip()
     comentario = comentario.strip()
     avaliacao = int(avaliacao)
 
     if not anonimo and len(nome) < 3:
         raise ValueError("Informe seu nome ou escolha publicar como anônimo.")
-    if avaliacao < 0 or avaliacao > 5:
-        raise ValueError("Selecione uma nota de 0 a 5 estrelas.")
+    if avaliacao < 1 or avaliacao > 5:
+        raise ValueError("Selecione uma nota de 1 a 5 estrelas.")
     if len(comentario) < 10:
         raise ValueError("Escreva um comentário com pelo menos 10 caracteres.")
     if len(comentario) > 500:
@@ -343,22 +343,25 @@ def registrar_feedback(nome, anonimo, avaliacao, comentario, autorizou_publicaca
 
 def calcular_resumo_feedback(feedbacks):
     """Calcula os indicadores públicos da avaliação do StudyTrack."""
-    total = len(feedbacks)
+    notas = [
+        int(item["avaliacao"]) for item in feedbacks
+        if 1 <= int(item.get("avaliacao", 0)) <= 5
+    ]
+    total = len(notas)
     if total == 0:
         return {
             "total": 0,
             "media": 0.0,
             "positivos": 0.0,
-            "distribuicao": {nota: 0 for nota in range(6)},
+            "distribuicao": {nota: 0 for nota in range(1, 6)},
         }
 
-    notas = [int(item["avaliacao"]) for item in feedbacks]
     positivos = sum(1 for nota in notas if nota >= 4)
     return {
         "total": total,
         "media": sum(notas) / total,
         "positivos": (positivos / total) * 100,
-        "distribuicao": {nota: notas.count(nota) for nota in range(6)},
+        "distribuicao": {nota: notas.count(nota) for nota in range(1, 6)},
     }
 
 
