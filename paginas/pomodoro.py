@@ -155,8 +155,8 @@ def exibir_temporizador():
         total_segundos = pausa_minutos * 60
         icone = "☕"
 
-    tempo_decorrido = total_segundos - restante
-    progresso = tempo_decorrido / total_segundos
+    # A barra representa o tempo restante: começa cheia e diminui até zero.
+    progresso = restante / total_segundos
     progresso = max(0.0, min(progresso, 1.0))
 
     st.write("")
@@ -182,7 +182,21 @@ def exibir_temporizador():
     unsafe_allow_html=True,
 )
 
-        st.progress(progresso)
+        # Classes próprias evitam que o CSS global pinte a trilha inteira.
+        st.markdown(
+            (
+                '<div role="progressbar" aria-label="Tempo restante do Pomodoro" '
+                'aria-valuemin="0" aria-valuemax="100" '
+                f'aria-valuenow="{progresso * 100:.2f}" '
+                f'aria-valuetext="{minutos:02d}:{segundos:02d} restantes" '
+                'style="width:100%; height:8px; background:#E5E7EB; '
+                'border-radius:999px; overflow:hidden; margin:0 0 16px;">'
+                f'<div style="width:{progresso * 100:.4f}%; height:100%; '
+                'background:linear-gradient(90deg,#4F46E5,#06B6D4); '
+                'border-radius:999px;"></div></div>'
+            ),
+            unsafe_allow_html=True,
+        )
 
         col1, col2, col3 = st.columns(3)
 
