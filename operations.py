@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
@@ -366,8 +367,21 @@ def calcular_resumo_feedback(feedbacks):
 
 
 def formatar_data_feedback(valor):
+    """Converte timestamps UTC para o horário de Brasília."""
     try:
-        data = datetime.fromisoformat(str(valor).replace("Z", "+00:00"))
+        data = datetime.fromisoformat(
+            str(valor).replace("Z", "+00:00")
+        )
+
+        # Se não houver fuso informado, considera UTC.
+        if data.tzinfo is None:
+            from datetime import timezone
+            data = data.replace(tzinfo=timezone.utc)
+
+        # Converte para o horário de Brasília.
+        data = data.astimezone(ZoneInfo("America/Sao_Paulo"))
+
         return data.strftime("%d/%m/%Y às %H:%M")
+
     except (TypeError, ValueError):
         return "Data não informada"
