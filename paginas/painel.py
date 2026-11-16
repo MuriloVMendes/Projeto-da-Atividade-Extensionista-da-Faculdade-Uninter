@@ -188,7 +188,21 @@ for item in disciplinas:
 
     with st.container(border=True):
         st.subheader(item["nome"])
-        st.progress(progresso / 100)
+        # Preenche somente a fração estudada, sem o CSS global de st.progress.
+        fracao = max(0.0, min(progresso / 100, 1.0))
+        st.markdown(
+            (
+                '<div role="progressbar" aria-label="Progresso da meta de estudo" '
+                'aria-valuemin="0" aria-valuemax="100" '
+                f'aria-valuenow="{fracao * 100:.2f}" '
+                'style="width:100%; height:8px; background:#E5E7EB; '
+                'border-radius:999px; overflow:hidden; margin:0 0 16px;">'
+                f'<div style="width:{fracao * 100:.4f}%; height:100%; '
+                'background:linear-gradient(90deg,#4F46E5,#06B6D4); '
+                'border-radius:999px;"></div></div>'
+            ),
+            unsafe_allow_html=True,
+        )
 
         st.caption(
             f"{progresso:.1f}% · "
